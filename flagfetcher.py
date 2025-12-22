@@ -115,4 +115,5 @@ def main():
     else:
         print("No flag retrived for unknown reason, exiting!")
 
-main()
+if __name__ == "__main__":
+    main()
