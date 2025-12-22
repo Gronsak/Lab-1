@@ -10,7 +10,7 @@ class FlagToken:
         self.expiresIn = expiresIn
         self.verifyWithin = verifyWithin
         self.claimWithin = claimWithin
-        self.deadline = round(time.time() + verifyWithin / 1000)
+        self.deadline = 0
         self.secret = ""
     def SetSecret(self, secret:str, claimWithin: int, deadline: int):
         self.secret = secret
@@ -53,8 +53,9 @@ def verify_token(token: FlagToken) -> FlagToken:
 
     secret = json["secret"]
     claimWithin = json["claimWithinMs"]
+    deadline = int(json["deadline"])
 
-    token.SetSecret(secret,claimWithin)
+    token.SetSecret(secret,claimWithin,deadline)
     return token
 
 def fetch_flag(token: FlagToken) -> str:
@@ -71,15 +72,14 @@ def fetch_flag(token: FlagToken) -> str:
     if not(r.status_code == 200):
         r.raise_for_status()
         raise ConnectionError(f"Unexpected HTTP {r.status_code} respose")
-    print(r.content.decode())
     json = r.json()
 
     flag = json["flag"]
     return flag
 
 def main():
-    print("Requesting token...")
     try:
+        print("Requesting token...")
         token = fetch_token()
         if token.token != "":
             print("Token recieved!")
@@ -105,8 +105,6 @@ def main():
         return
     except ValueError as e:
         print(e)
-    except:
-        print("There was an unexpected error!")
         return
     
     if flag != "":
