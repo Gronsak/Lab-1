@@ -85,6 +85,7 @@ def running_time() -> float:
 
 def main():
     print(banner)
+    print(f"Target URL: {ServerUrl}\n")
     try:
         print(f"({running_time()}ms) Requesting token...")
         token = fetch_token()
