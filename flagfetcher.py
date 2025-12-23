@@ -141,7 +141,7 @@ try:
             print_help()
             sys.exit()
         elif arg in ("-u", "--url"):
-            ServerUrl = val
+            ServerUrl = val.strip("/")
             
 except getopt.error as e:
     print(str(e))
