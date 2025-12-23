@@ -26,10 +26,13 @@ class FlagToken:
         #self.deadline = deadline
 
 def print_help():
-    print("""Flagfetcher is a very basic app to get a flag using an api
+    print(f"""
+Flagfetcher is a very basic app to get a flag using a predefined API
+Default API server URl is {ServerUrl}
+
 Options:
     -h, --help: Show this help message.
-    -u, --url: Set API Server URL (http://www.example.com)""")
+    -u, --url: Set API Server URL (-u "http://www.example.com")""")
 def fetch_token() -> FlagToken:
     endpoint = "/api/token"
     rUrl = ServerUrl + endpoint
