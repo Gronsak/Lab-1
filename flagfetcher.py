@@ -1,6 +1,11 @@
+import getopt, sys
 import requests
 import pyfiglet
 from datetime import datetime as time
+
+args = sys.argv[1:]
+options = "hu:"
+longOptions = ["help", "url"]
 
 banner = pyfiglet.figlet_format("/Flagfetcher/", font="rounded")
 ServerUrl = "http://10.3.10.104:3000"
@@ -8,18 +13,23 @@ s = requests.session()
 start = time.now()
 
 class FlagToken:
-    def __init__(self, token:str, expiresIn: int, verifyWithin: int, claimWithin: int):
+    def __init__(self, token:str):
         self.token = token
-        self.expiresIn = expiresIn
-        self.verifyWithin = verifyWithin
-        self.claimWithin = claimWithin
-        self.deadline = int(time.now().timestamp()) + (verifyWithin + claimWithin)/1000
+        #self.expiresIn = expiresIn
+        #self.verifyWithin = verifyWithin
+        #self.claimWithin = claimWithin
+        #self.deadline = int(time.now().timestamp()) + (verifyWithin + claimWithin)/1000
         self.secret = ""
-    def SetSecret(self, secret:str, claimWithin: int, deadline: int):
+    def SetSecret(self, secret:str):
         self.secret = secret
-        self.claimWithin = claimWithin
-        self.deadline = deadline
+        #self.claimWithin = claimWithin
+        #self.deadline = deadline
 
+def print_help():
+    print("""Flagfetcher is a very basic app to get a flag using an api
+Options:
+    -h, --help: Show this help message.
+    -u, --url: Set API Server URL (http://www.example.com)""")
 def fetch_token() -> FlagToken:
     endpoint = "/api/token"
     rUrl = ServerUrl + endpoint
@@ -31,11 +41,11 @@ def fetch_token() -> FlagToken:
     json = r.json()
 
     tokenstr = json["token"]
-    expiresIn = json["expiresInMs"]
-    verifyWithin = json["verifyWithinMs"]
-    claimWithin = json["claimWithinMs"]
+    # expiresIn = json["expiresInMs"]
+    # verifyWithin = json["verifyWithinMs"]
+    # claimWithin = json["claimWithinMs"]
 
-    token = FlagToken(tokenstr,expiresIn,verifyWithin,claimWithin)
+    token = FlagToken(tokenstr)
     return token
 
 def verify_token(token: FlagToken) -> FlagToken:
@@ -55,10 +65,10 @@ def verify_token(token: FlagToken) -> FlagToken:
     json = r.json()
 
     secret = json["secret"]
-    claimWithin = json["claimWithinMs"]
-    deadline = int(json["deadline"])
+    # claimWithin = json["claimWithinMs"]
+    # deadline = int(json["deadline"])
 
-    token.SetSecret(secret,claimWithin,deadline)
+    token.SetSecret(secret)
     return token
 
 def fetch_flag(token: FlagToken) -> str:
@@ -93,7 +103,7 @@ def main():
             print(f"({running_time()}ms) Token recieved!")
         else:
             print("No Token recieved, exiting!")
-            return
+            sys.exit()
         
         print(f"({running_time()}ms) Verifying token...")
         token = verify_token(token)
@@ -101,24 +111,37 @@ def main():
             print(f"({running_time()}ms) Token verified!")
         else:
             print("Token was not verified but no errors was raised, exiting!")
-            return
+            sys.exit()
         
         print(f"({running_time()}ms) Requesting flag...")
         flag = fetch_flag(token)
     except ConnectionError as e:
         print(e)
-        return
+        sys.exit()
     except requests.HTTPError as e:
         print(e)
-        return
+        sys.exit()
     except ValueError as e:
         print(e)
-        return
+        sys.exit()
     
     if flag != "":
         print(f"({running_time()}ms) Flag retrived: {flag}")
     else:
         print("No flag retrived for unknown reason, exiting!")
+
+
+try:
+    arguments, values = getopt.getopt(args, options, longOptions)
+    for arg, val in arguments:
+        if arg in ("-h", "--help"):
+            print_help()
+            sys.exit()
+        elif arg in ("-u", "--url"):
+            ServerUrl = val
+            
+except getopt.error as e:
+    print(str(e))
 
 if __name__ == "__main__":
     main()
